@@ -1,0 +1,23 @@
+{
+  "name": "random-chat-app",
+  "version": "1.0.0",
+  "description": "chat with random strangers",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Yashvardhan Singh (yvs2701)",
+  "license": "ISC",
+  "nodemonConfig": {
+    "ignore": ["frontend/*"]
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "nodemon": "^3.1.4"
+  }
+}
