@@ -5,16 +5,21 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
+    "predev": "cd frontend && npm run build",
     "dev": "nodemon index.js",
+    "frontend": "cd frontend && npm run dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Yashvardhan Singh (yvs2701)",
   "license": "ISC",
   "nodemonConfig": {
-    "ignore": ["frontend/*"]
+    "ignore": [
+      "frontend/*"
+    ]
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",

@@ -1,14 +1,20 @@
-import { useState } from 'react'
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route
+} from 'react-router-dom'
 import './App.css'
+import Login from './pages/Login'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
-      <button onClick={() => setCount((count) => count + 1)}>
-        count is {count}
-      </button>
+      <Router>
+        <Routes>
+          <Route path='/' Component={Login} />
+        </Routes>
+      </Router>
     </>
   )
 }
