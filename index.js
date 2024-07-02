@@ -2,8 +2,8 @@ const express = require('express');
 const { createServer } = require('http');
 const { Server } = require("socket.io");
 const path = require('path');
-
 require('dotenv').config();
+
 const port = process.env.PORT || 3000;
 
 
@@ -11,38 +11,68 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server);
 
+
 const QUEUE = [];
 
-const findPeerForLoneSocket = function (socket) {
+const findPeerForLoneSocket = (socket) => {
+    console.group('Finding peer for ' + socket.id);
     if (QUEUE.length > 0) {
         const peer = QUEUE.shift() ?? null;
-        console.log(peer.id + ' was popped from queue\n');
+        console.log(peer.id + ' popped from queue');
 
         const room = socket.id + '#' + peer.id;
 
         peer.join(room);
         socket.join(room);
-        console.log(socket.id + ' and ' + peer.id + ' joined room ' + room);
 
-        peer.emit('chat start', { 'name': socket.id, 'room': room });
-        socket.emit('chat start', { 'name': peer.id, 'room': room });
+        io.to(room).emit('chat start', { room });
+
+        console.log(socket.id + ' and ' + peer.id + ' joined room ' + room);
     } else {
         QUEUE.push(socket);
-        console.log(socket.id + ' was pushed to queue\n');
-        log(QUEUE);
+        console.log('No peer found. ' + socket.id + ' pushed to queue\n');
     }
+    console.groupEnd();
+
+    // log queue
+    console.group('Queue: ');
+    if (QUEUE.length === 0) {
+        console.log('Queue empty');
+    } else {
+        QUEUE.forEach((socket) => {
+            console.log(socket.id + ' ');
+        });
+    }
+    console.groupEnd();
 };
+
 
 app.use(express.static(path.join(__dirname, './frontend/build')));
 
 
 io.on('connection', (socket) => {
-    console.log(socket.id + ' connected');
+    console.group('New Socket Connection: ' + socket.id);
     findPeerForLoneSocket(socket);
 
-    io.on('disconnect', () => {
+
+    socket.on('disconnecting', () => {
+        console.group(socket.id + ' disconnecting');
+        if (QUEUE.indexOf(socket) !== -1) // if in the queue
+            QUEUE.splice(QUEUE.indexOf(socket), 1) // blocks the queue and removes the socket from the queue
+        else {
+            socket.rooms.forEach((room) => {
+                console.log('Clearing room: ' + room);
+                socket.to(room).emit('chat end');
+                io.in(room).socketsLeave(room);
+            });
+        }
+    })
+
+    socket.on('disconnect', () => {
         console.log(socket.id + ' disconnected');
+        console.groupEnd();
     });
+    console.groupEnd();
 });
 
 
