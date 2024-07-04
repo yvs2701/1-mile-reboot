@@ -1,0 +1,41 @@
+.chatActions {
+  width: 100%;
+  height: 60px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chatActions>button {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.chatbar {
+  border: 4px solid var(--foreground-rgb);
+  border-radius: calc(var(--default-radius));
+  
+  margin: 0 4px;
+  padding: 8px;
+  
+  font-size: 16px;
+  color: var(--font-rgb);
+
+  /* flex: 1 0 400px; */
+  height: 100%;
+  min-height: 100%;
+  max-height: 150%;
+  resize: vertical;
+
+  transition: border 0.2s;
+}
+
+.chatbar::placeholder {
+  color: var(--glow-shadow);
+}
+
+.chatbar:focus {
+  border: 4px solid var(--faint-shadow);
+  outline: none;
+}

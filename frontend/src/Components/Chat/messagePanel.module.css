@@ -1,0 +1,53 @@
+.message-screen {
+  margin-bottom: calc(var(--default-padding)*3);
+  padding: calc(var(--default-padding)*3);
+
+  background: var(--foreground-rgb);
+  border-radius: var(--default-radius);
+
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.scrollable {
+  position: relative;
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+
+  background: var(--foreground-rgb);
+}
+
+.mssg {
+  display: inline-block;
+  white-space: pre-wrap; /* preserve text formatting */
+  margin: var(--default-padding) 0;
+  padding: var(--default-padding) calc(var(--default-padding)*2);
+
+  border-top-left-radius: var(--default-radius);
+  border-top-right-radius: var(--default-radius);
+  box-shadow: inset -10px 10px 100vh 0 rgb(255, 255, 255, 0.1);
+
+  min-width: 50px;
+  max-width: 50%;
+  word-wrap: normal;
+}
+
+.mssg-left {
+  align-self: flex-start;
+  padding-right: calc(var(--default-padding)*3);
+
+  background: var(--primary-btn-start);
+
+  border-bottom-right-radius: var(--default-radius);
+}
+
+.mssg-right {
+  align-self: flex-end;
+  background: var(--faint-shadow);
+  padding-left: calc(var(--default-padding)*3);
+  border-bottom-left-radius: var(--default-radius);
+}
