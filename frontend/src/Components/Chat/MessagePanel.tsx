@@ -1,9 +1,5 @@
 import styles from './messagePanel.module.css'
-
-type TMessage = {
-  userID: string
-  message: string | undefined
-}
+import { TMessage } from '../../types'
 
 export default function MessagePanel({ user, messages }: { user: string, messages: TMessage[] }) {
 

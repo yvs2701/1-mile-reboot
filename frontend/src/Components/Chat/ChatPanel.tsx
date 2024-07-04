@@ -1,13 +1,9 @@
 'use client';
 import styles from './chatpanel.module.css'
+import { TMessage } from '../../types'
 import MessagePanel from './MessagePanel'
 import ChatActions from './chatActions'
-import { Dispatch, SetStateAction } from 'react';
-
-type TMessage = {
-  userID: string
-  message: string | undefined
-}
+import { Dispatch, SetStateAction } from 'react'
 
 type TProps = {
   user: string

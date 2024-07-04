@@ -1,26 +1,26 @@
 import { useEffect, useState } from "react";
-import { socket } from "../utils/socket";
 import ChatPanel from "../Components/Chat/ChatPanel";
+import { TMessage, SocketEvents } from "../types";
+import { Socket } from "socket.io-client";
 
-type TMessage = {
-  userID: string
-  message: string
-}
-
-function ChatPage() {
-  const [isConnected, setIsConnected] = useState(false);
+function ChatPage({ socket }: { socket: Socket }) {
   const [messages, setMessages] = useState<TMessage[]>([]);
   const [messageInput, setMessageInput] = useState('');
+  const [room, setRoom] = useState<string | null>(null);
 
   const handleNextClick = async () => {
-    socket.emit('skip chat');
+    if (room === null)
+      return;
+    socket.emit(SocketEvents.SKIP_CHAT, { room });
   }
 
   const handleSubmitClick = async () => {
+    if (room === null)
+      return;
     if (messageInput) {
-      const data: TMessage = { userID: socket.id!, message: messageInput };
-      socket.emit('chat message', data);
-      setMessages([...messages, data]);
+      const data: TMessage = { userID: socket.id!, message: messageInput, room: room };
+      socket.emit(SocketEvents.CHAT_SEND, data);
+      setMessages(prev => [...prev, data]);
       setMessageInput('');
     }
   }
@@ -30,29 +30,35 @@ function ChatPage() {
       socket.connect();
     }
 
-    function onConnect() {
-      setIsConnected(true);
+    function onChatStart(data: { room: string }) {
+      setRoom(data.room);
+      setMessages([]);
+      setMessageInput('');
     }
 
-    function onDisconnect() {
-      console.log('Disconnected socket');
-      setIsConnected(false);
+    function onChatEnd() {
+      setRoom(null);
     }
 
-    socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
+    function onChatMessage(data: TMessage) {
+      setMessages(prev => [...prev, data]);
+    }
+
+    socket.on(SocketEvents.CHAT_START, onChatStart);
+    socket.on(SocketEvents.CHAT_MESSAGE, onChatMessage);
+    socket.on(SocketEvents.CHAT_END, onChatEnd);
 
     return () => {
       socket.disconnect();
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
+      socket.off(SocketEvents.CHAT_MESSAGE, onChatMessage);
+      socket.off(SocketEvents.CHAT_START, onChatStart);
+      socket.off(SocketEvents.CHAT_END, onChatEnd);
     };
   }, []);
 
   return (
     <>
-      <p>Socket connection status: {isConnected ? 'connected' : 'not connected'}</p>
-      {isConnected &&
+      {room &&
         <ChatPanel user={socket.id!} messages={messages} messageInput={messageInput}
           setMessageInput={setMessageInput} handleNextClick={handleNextClick} handleSubmitClick={handleSubmitClick}
         />

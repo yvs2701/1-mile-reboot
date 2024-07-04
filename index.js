@@ -3,6 +3,7 @@ const { createServer } = require('http');
 const { Server } = require("socket.io");
 const path = require('path');
 require('dotenv').config();
+const { SocketEvents, PEER_QUEUE, findPeerForLoneSocket } = require('./SocketUtils');
 
 const port = process.env.PORT || 3000;
 
@@ -11,64 +12,47 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server);
 
-
-const QUEUE = [];
-
-const findPeerForLoneSocket = (socket) => {
-    console.group('Finding peer for ' + socket.id);
-    if (QUEUE.length > 0) {
-        const peer = QUEUE.shift() ?? null;
-        console.log(peer.id + ' popped from queue');
-
-        const room = socket.id + '#' + peer.id;
-
-        peer.join(room);
-        socket.join(room);
-
-        io.to(room).emit('chat start', { room });
-
-        console.log(socket.id + ' and ' + peer.id + ' joined room ' + room);
-    } else {
-        QUEUE.push(socket);
-        console.log('No peer found. ' + socket.id + ' pushed to queue\n');
-    }
-    console.groupEnd();
-
-    // log queue
-    console.group('Queue: ');
-    if (QUEUE.length === 0) {
-        console.log('Queue empty');
-    } else {
-        QUEUE.forEach((socket) => {
-            console.log(socket.id + ' ');
-        });
-    }
-    console.groupEnd();
-};
-
-
 app.use(express.static(path.join(__dirname, './frontend/build')));
 
-
-io.on('connection', (socket) => {
+io.on(SocketEvents.CONNECT, (socket) => {
     console.group('New Socket Connection: ' + socket.id);
-    findPeerForLoneSocket(socket);
 
+    const room = findPeerForLoneSocket(socket);
+    if (room !== null)
+        io.to(room).emit(SocketEvents.CHAT_START, { room });
 
-    socket.on('disconnecting', () => {
+    socket.on(SocketEvents.CHAT_SEND, (data) => {
+        // broadcast to all other peers in the room except socket
+        if (data.hasOwnProperty('room'))
+            socket.broadcast.to(data.room).emit(SocketEvents.CHAT_MESSAGE, data);
+    });
+
+    socket.on(SocketEvents.SKIP_CHAT, (data) => {
+        if (data.hasOwnProperty('room')) {
+            socket.broadcast.to(data.room).emit(SocketEvents.CHAT_END);
+            socket.leave(data.room);
+            const room = findPeerForLoneSocket(socket);
+            if (room !== null)
+                io.to(room).emit(SocketEvents.CHAT_START, { room });
+        }
+    });
+
+    socket.on(SocketEvents.DISCONNECTING, () => {
         console.group(socket.id + ' disconnecting');
-        if (QUEUE.indexOf(socket) !== -1) // if in the queue
-            QUEUE.splice(QUEUE.indexOf(socket), 1) // blocks the queue and removes the socket from the queue
+
+        if (PEER_QUEUE.indexOf(socket) !== -1) // if socket is in the queue
+            PEER_QUEUE.splice(PEER_QUEUE.indexOf(socket), 1) // block the queue (using mutating array fn) and remove it
         else {
             socket.rooms.forEach((room) => {
                 console.log('Clearing room: ' + room);
-                socket.to(room).emit('chat end');
+
+                socket.broadcast.to(room).emit(SocketEvents.CHAT_END); // broadcast to all other peers in the room except socket
                 io.in(room).socketsLeave(room);
             });
         }
-    })
+    });
 
-    socket.on('disconnect', () => {
+    socket.on(SocketEvents.DISCONNECT, () => {
         console.log(socket.id + ' disconnected');
         console.groupEnd();
     });

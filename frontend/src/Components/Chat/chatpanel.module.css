@@ -2,4 +2,5 @@
   display: grid;
   /* 60px is the height of chatActions */
   grid-template-rows: auto 60px;
+  height: 100%;
 }
