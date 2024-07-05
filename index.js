@@ -23,11 +23,13 @@ io.on(SocketEvents.CONNECT, (socket) => {
 
     socket.on(SocketEvents.CHAT_SEND, (data) => {
         // broadcast to all other peers in the room except socket
-        if (data.hasOwnProperty('room'))
+        if (data.hasOwnProperty('room') && data.hasOwnProperty('message'))
+            data.message = data.message.trim();
             socket.broadcast.to(data.room).emit(SocketEvents.CHAT_MESSAGE, data);
     });
 
     socket.on(SocketEvents.SKIP_CHAT, (data) => {
+        // FIXME: Not working properly
         if (data.hasOwnProperty('room')) {
             socket.broadcast.to(data.room).emit(SocketEvents.CHAT_END);
             socket.leave(data.room);

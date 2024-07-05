@@ -24,6 +24,10 @@
 .mssg {
   display: inline-block;
   white-space: pre-wrap; /* preserve text formatting */
+  word-break: break-word;
+  /* same as - */
+  /* word-break: normal; */
+  /* overflow-wrap: break-word; */
   margin: var(--default-padding) 0;
   padding: var(--default-padding) calc(var(--default-padding)*2);
 
@@ -33,7 +37,6 @@
 
   min-width: 50px;
   max-width: 50%;
-  word-wrap: normal;
 }
 
 .mssg-left {

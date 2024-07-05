@@ -1,27 +1,32 @@
 import styles from './button.module.css'
 
-/* [FIX ME] ADD INTERACTIVITY, disable the buttons till request is not complete */
-
-export const Primary = ({ label, subtitle, handleClick }: { label: String, subtitle?: String, handleClick: (...args: any) => any }) => {
+const Button = ({ classes, label, subtitle, handleClick, disabled }:
+  { classes: string, label: String, subtitle?: String, handleClick: (...args: any) => any, disabled?: boolean }
+) => {
   return (
     <button
-      className={`${styles.btn} ${styles["btn-primary"]}`}
+      className={classes}
       onClick={handleClick}
       data-subtitle={subtitle}
+      disabled={disabled}
     >
       {label}
     </button>
   )
 }
 
-export const Secondary = ({ label, subtitle, handleClick }: { label: String, subtitle?: String, handleClick: (...args: any) => any }) => {
+export const Primary = ({ label, subtitle, handleClick, disabled }:
+  { disabled?: boolean, label: String, subtitle?: String, handleClick: (...args: any) => any }) => {
   return (
-    <button
-      className={`${styles.btn} ${styles["btn-secondary"]}`}
-      onClick={handleClick}
-      data-subtitle={subtitle}
-    >
-      {label}
-    </button>
+    <Button classes={`${styles.btn} ${styles["btn-primary"]}`} disabled={disabled}
+      label={label} subtitle={subtitle} handleClick={handleClick} />
+  )
+}
+
+export const Secondary = ({ label, subtitle, handleClick, disabled }:
+  { disabled?: boolean, label: String, subtitle?: String, handleClick: (...args: any) => any }) => {
+  return (
+    <Button classes={`${styles.btn} ${styles["btn-secondary"]}`} disabled={disabled}
+      label={label} subtitle={subtitle} handleClick={handleClick} />
   )
 }

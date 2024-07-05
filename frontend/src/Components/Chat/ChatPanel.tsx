@@ -6,19 +6,22 @@ import ChatActions from './chatActions'
 import { Dispatch, SetStateAction } from 'react'
 
 type TProps = {
-  user: string
-  messageInput: string
-  setMessageInput: Dispatch<SetStateAction<string>>
-  handleNextClick: (e: React.MouseEvent<HTMLElement>) => Promise<void>
-  handleSubmitClick: (e: React.MouseEvent<HTMLElement>) => Promise<void>
-  messages: TMessage[]
+  user: string,
+  messageInput: string,
+  setMessageInput: Dispatch<SetStateAction<string>>,
+  handleNextClick: (e: React.MouseEvent<HTMLElement>) => Promise<void>,
+  handleSubmitClick: (e: React.MouseEvent<HTMLElement>) => Promise<void>,
+  messages: TMessage[],
+  disabled: boolean,
 }
 
-export default function ChatPanelLayout({ user, messages, messageInput, setMessageInput, handleNextClick, handleSubmitClick }: TProps) {
+export default function ChatPanelLayout({ user, messages, messageInput, setMessageInput, handleNextClick, handleSubmitClick, disabled }: TProps) {
   return (
-    <section className={styles["chat-screen"]}>
+    <div className={styles["panel-wrapper"]}>
       <MessagePanel user={user} messages={messages} />
-      <ChatActions messageInput={messageInput} setMessageInput={setMessageInput} handleNextClick={handleNextClick} handleSubmitClick={handleSubmitClick} />
-    </section>
+      <ChatActions disabled={disabled}
+        messageInput={messageInput} setMessageInput={setMessageInput}
+        handleNextClick={handleNextClick} handleSubmitClick={handleSubmitClick} />
+    </div>
   )
 }
