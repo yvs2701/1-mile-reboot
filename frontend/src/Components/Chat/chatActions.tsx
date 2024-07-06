@@ -1,22 +1,24 @@
 import styles from './chatActions.module.css'
 import { Primary, Secondary } from '../Buttons/button.tsx'
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, KeyboardEventHandler, MouseEventHandler, SetStateAction } from 'react'
 
 type TProps = {
-  disabled: boolean,
+  disabled?: boolean,
   messageInput: string,
   setMessageInput: Dispatch<SetStateAction<string>>,
-  handleNextClick: (e: React.MouseEvent<HTMLElement>) => Promise<void>,
-  handleSubmitClick: (e: React.MouseEvent<HTMLElement>) => Promise<void>,
+  handleNextClick: MouseEventHandler,
+  handleSubmitClick: MouseEventHandler,
+  keyShortcuts?:KeyboardEventHandler,
 }
 
-export default function ChatActions({ disabled, messageInput, setMessageInput, handleNextClick, handleSubmitClick }: TProps) {
+export default function ChatActions({ disabled, messageInput, setMessageInput, handleNextClick, handleSubmitClick, keyShortcuts }: TProps) {
   return (
     <div className={styles.chatActions}>
       <Secondary label="Next" subtitle="(Esc)" handleClick={handleNextClick} />
       <textarea value={messageInput}
         className={styles.chatbar}
         placeholder="Write a message..."
+        onKeyDown={keyShortcuts}
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMessageInput(e.target.value)}
         disabled={disabled}
       />
