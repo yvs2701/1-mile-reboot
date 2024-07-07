@@ -25,14 +25,15 @@ io.on(SocketEvents.CONNECT, (socket) => {
         // broadcast to all other peers in the room except socket
         if (data.hasOwnProperty('room') && data.hasOwnProperty('message'))
             data.message = data.message.trim();
-            socket.broadcast.to(data.room).emit(SocketEvents.CHAT_MESSAGE, data);
+        socket.broadcast.to(data.room).emit(SocketEvents.CHAT_MESSAGE, data);
     });
 
     socket.on(SocketEvents.SKIP_CHAT, (data) => {
-        // FIXME: Not working properly
         if (data.hasOwnProperty('room')) {
-            socket.broadcast.to(data.room).emit(SocketEvents.CHAT_END);
-            socket.leave(data.room);
+            if (data.room !== null) {
+                socket.leave(data.room);
+                socket.broadcast.to(data.room).emit(SocketEvents.CHAT_END);
+            }
             const room = findPeerForLoneSocket(socket);
             if (room !== null)
                 io.to(room).emit(SocketEvents.CHAT_START, { room });
@@ -46,10 +47,12 @@ io.on(SocketEvents.CONNECT, (socket) => {
             PEER_QUEUE.splice(PEER_QUEUE.indexOf(socket), 1) // block the queue (using mutating array fn) and remove it
         else {
             socket.rooms.forEach((room) => {
-                console.log('Clearing room: ' + room);
+                if (room !== socket.id) {
+                    console.log('Clearing room: ' + room);
 
-                socket.broadcast.to(room).emit(SocketEvents.CHAT_END); // broadcast to all other peers in the room except socket
-                io.in(room).socketsLeave(room);
+                    socket.broadcast.to(room).emit(SocketEvents.CHAT_END); // broadcast to all other peers in the room except socket
+                    io.in(room).socketsLeave(room);
+                }
             });
         }
     });

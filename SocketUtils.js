@@ -14,6 +14,8 @@ const SocketEvents = Object.freeze({
 const PEER_QUEUE = [];
 
 const findPeerForLoneSocket = (socket) => {
+    if (PEER_QUEUE.indexOf(socket) !== -1) // if socket is in the queue
+        return null;
     console.group('Finding peer for ' + socket.id);
     if (PEER_QUEUE.length > 0) {
         const peer = PEER_QUEUE.shift() ?? null;

@@ -6,6 +6,8 @@ import { throttle } from "../utils/throttle";
 import styles from './chat.module.css'
 
 function ChatPage({ socket }: { socket: Socket }) {
+  // TODO: add loading spinner
+  // TODO: connect peers withing a given distance
 
   const [userID, setUserID] = useState<string>('');
   const [messages, setMessages] = useState<TMessage[]>([]);
@@ -13,7 +15,8 @@ function ChatPage({ socket }: { socket: Socket }) {
   const [room, setRoom] = useState<string | null>(null);
 
   const handleNextClick = throttle(() => {
-    if (!socket.connected || userID === '' || room === null)
+    // TODO: ask for confirmation before skipping
+    if (!socket.connected || userID === '')
       return;
 
     socket.emit(SocketEvents.SKIP_CHAT, { room });
