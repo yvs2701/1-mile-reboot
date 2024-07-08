@@ -23,8 +23,6 @@ function ChatPage({ socket }: { socket: Socket }) {
   }, 1000) // can run only after 1s after the last call
 
   const handleSubmitClick = throttle(() => {
-    console.log('userID', userID, 'room', room, 'message', messageInput.trim())
-
     if (!socket.connected || userID === '' || room === null || messageInput.trim() === '')
       return;
 

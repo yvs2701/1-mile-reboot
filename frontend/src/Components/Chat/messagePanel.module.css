@@ -1,5 +1,5 @@
 .message-screen {
-  margin-bottom: calc(var(--default-padding)*3);
+  margin-bottom: calc(var(--default-margin)*3);
   padding: calc(var(--default-padding)*3);
 
   background: var(--foreground-rgb);
@@ -12,6 +12,7 @@
 .scrollable {
   position: relative;
   width: 100%;
+  min-height: 100%;
 
   display: flex;
   flex-direction: column;
@@ -28,7 +29,7 @@
   /* same as - */
   /* word-break: normal; */
   /* overflow-wrap: break-word; */
-  margin: var(--default-padding) 0;
+  margin: calc(var(--default-margin)/2) 0;
   padding: var(--default-padding) calc(var(--default-padding)*2);
 
   border-top-left-radius: var(--default-radius);
