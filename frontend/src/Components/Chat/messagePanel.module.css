@@ -7,6 +7,13 @@
 
   overflow-x: hidden;
   overflow-y: scroll;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion) {
+  .message-screen {
+    scroll-behavior: auto;
+  }
 }
 
 .scrollable {
@@ -24,7 +31,8 @@
 
 .mssg {
   display: inline-block;
-  white-space: pre-wrap; /* preserve text formatting */
+  white-space: pre-wrap;
+  /* preserve text formatting */
   word-break: break-word;
   /* same as - */
   /* word-break: normal; */

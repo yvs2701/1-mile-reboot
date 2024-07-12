@@ -7,15 +7,20 @@ export default function MessagePanel({ user, messages }: { user: string, message
 
   useEffect(() => {
     /** NOTE - scroll to bottom to show new messages only if the user is near to the bottom of the chat
-      * OR the new message has less than 3/4th the height of the container
+      * OR the new message was sent by the user
       */
-    if (scrollContainer.current !== null) {
-      // find the height of the content that is overflown from the bottom
-      const contentAtBottom = scrollContainer.current.scrollHeight - scrollContainer.current.scrollTop - scrollContainer.current.clientHeight
+    if (scrollContainer.current !== null && messages.length > 0) {
+      // if the last message was sent by the user, scroll to the bottom
+      if (messages[messages.length - 1].userID === user) {
+        scrollContainer.current.scrollTop = scrollContainer.current.scrollHeight
+      } else {
+        // find the height of the content that is overflown from the bottom
+        const contentAtBottom = scrollContainer.current.scrollHeight - scrollContainer.current.scrollTop - scrollContainer.current.clientHeight
 
-      if (contentAtBottom <= scrollContainer.current.clientHeight * 0.75) {
-        // if that content is less than half the height of the container, scroll to the bottom
-        scrollContainer.current.scrollTop += contentAtBottom
+        if (contentAtBottom <= scrollContainer.current.clientHeight * 0.60) {
+          // if that content is less than 60% the height of the container, scroll to the bottom
+          scrollContainer.current.scrollTop = scrollContainer.current.scrollHeight
+        }
       }
     }
   }, [messages]);

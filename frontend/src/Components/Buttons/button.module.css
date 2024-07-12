@@ -12,6 +12,7 @@
 
   color: var(--font-rgb);
   font-size: 16px;
+  font-family: inherit;
 
   cursor: pointer;
 }
