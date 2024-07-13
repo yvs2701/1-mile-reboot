@@ -1,4 +1,22 @@
 .chat-section {
-    height: 100%;
-    width: 50vw;
+  height: 100%;
+  width: 50%;
+}
+
+@media screen and (max-width: 1280px) {
+  .chat-section {
+    width: 60%;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .chat-section {
+    width: 75%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .chat-section {
+    width: 100%;
+  }
 }

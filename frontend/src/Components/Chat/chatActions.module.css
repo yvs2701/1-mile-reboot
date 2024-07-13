@@ -19,7 +19,7 @@
   margin: 0 var(--default-margin);
   padding: 8px;
   
-  font-size: 16px;
+  font-size: 1rem;
   font-family: inherit;
   color: var(--font-rgb);
 

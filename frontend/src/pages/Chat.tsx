@@ -7,6 +7,7 @@ import styles from './chat.module.css'
 
 function ChatPage({ socket }: { socket: Socket }) {
   // TODO: add loading spinner
+  // TODO: add an emoji picker
   // TODO: connect peers withing a given distance
 
   const [userID, setUserID] = useState<string>('');
@@ -58,9 +59,7 @@ function ChatPage({ socket }: { socket: Socket }) {
     }
 
     function onDisconnect() {
-      setMessages([]);
       setRoom(null);
-      setUserID('');
       setMessageInput('');
     }
 

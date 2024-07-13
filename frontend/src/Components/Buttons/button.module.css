@@ -2,29 +2,34 @@
   min-width: 120px;
   height: 100%;
   text-align: center;
-  padding: 1em 2em;
+  padding: 1rem 2rem;
   outline: none;
-  border: 5em;
+  border: 5rem;
   border-radius: var(--default-radius);
 
   transform: translate(0);
   transition: all 0.2s ease-out;
 
   color: var(--font-rgb);
-  font-size: 16px;
+  font-size: 1rem;
   font-family: inherit;
 
   cursor: pointer;
 }
 
-.btn[data-subtitle]::before {
-  content: attr(data-subtitle);
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 4px;
-  font-size: 0.7em;
-  height: 15px;
+@media screen and (min-width: 1024px) {
+  /* show keyboard shortcut hints (subtitle) only above the viewport of 1024px */
+  .btn[data-shortcut]::before {
+    content: attr(data-shortcut);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 4px;
+    font-size: 0.8rem;
+    font-weight: 100;
+    font-family: inherit;
+    height: 15px;
+  }
 }
 
 .btn:after {
@@ -75,4 +80,14 @@
   box-shadow: none !important;
   cursor: not-allowed;
   opacity: 0.8;
+}
+
+@media screen and (max-width: 768px) {
+  .btn {
+    min-width: unset;
+    padding: 0.8rem 1.5rem;
+  }
+  .btn-primary:focus, .btn-secondary:focus {
+    outline: none;
+  }
 }

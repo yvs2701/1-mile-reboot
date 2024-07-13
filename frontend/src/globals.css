@@ -12,6 +12,7 @@
   --foreground-rgb: rgb(20, 20, 20);
   --background-rgb: rgb(0, 0, 0);
   --font-rgb: rgb(255, 255, 255);
+  --font-size: 1em;
   --default-padding: 8px;
   --default-margin: 4px;
 }
@@ -79,6 +80,7 @@ body {
 
 html {
   color-scheme: dark;
+  font-size: var(--font-size);
 }
 
 body {

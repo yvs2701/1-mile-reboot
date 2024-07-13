@@ -30,6 +30,7 @@
 }
 
 .mssg {
+  font-size: 1rem;
   display: inline-block;
   white-space: pre-wrap;
   /* preserve text formatting */
@@ -62,4 +63,22 @@
   background: var(--faint-shadow);
   padding-left: calc(var(--default-padding)*3);
   border-bottom-left-radius: var(--default-radius);
+}
+
+@media screen and (max-width: 1280px) {
+  .mssg {
+    max-width: 60%;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .mssg {
+    max-width: 75%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .mssg {
+    max-width: 90%;
+  }
 }

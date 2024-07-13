@@ -14,7 +14,7 @@ type TProps = {
 export default function ChatActions({ disabled, messageInput, setMessageInput, handleNextClick, handleSubmitClick, keyShortcuts }: TProps) {
   return (
     <div className={styles.chatActions}>
-      <Secondary label="Next" subtitle="(Esc)" handleClick={handleNextClick} />
+      <Secondary label="Next" shortcut="(Esc)" handleClick={handleNextClick} />
       <textarea value={messageInput}
         className={styles.chatbar}
         placeholder="Write a message..."
@@ -22,7 +22,7 @@ export default function ChatActions({ disabled, messageInput, setMessageInput, h
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMessageInput(e.target.value)}
         disabled={disabled}
       />
-      <Primary label="Send" subtitle="(ctrl + Enter)" handleClick={handleSubmitClick} disabled={disabled} />
+      <Primary label="Send" shortcut="(ctrl + Enter)" handleClick={handleSubmitClick} disabled={disabled} />
     </div>
   )
 }
