@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import ChatPanel from "../Components/Chat/ChatPanel";
-import { TMessage, SocketEvents } from "../types";
+import { TMessage, SocketEvents, message_server_id } from "../types";
 import { Socket } from "socket.io-client";
 import { throttle } from "../utils/throttle";
 import styles from './chat.module.css'
@@ -27,10 +27,10 @@ function ChatPage({ socket }: { socket: Socket }) {
     if (!socket.connected || userID === '' || room === null || messageInput.trim() === '')
       return;
 
-    const data: TMessage = { userID: socket.id!, message: messageInput.trim(), room: room };
+    const mssg: TMessage = { userID: socket.id!, message: messageInput.trim(), room: room };
 
-    socket.emit(SocketEvents.CHAT_SEND, data);
-    setMessages(prev => [...prev, data]);
+    socket.emit(SocketEvents.CHAT_SEND, mssg);
+    setMessages(prev => [...prev, mssg]);
     setMessageInput('');
   }, 400) // can run only after 0.4s after the last call
 
@@ -70,6 +70,8 @@ function ChatPage({ socket }: { socket: Socket }) {
     }
 
     function onChatEnd() {
+      const server_mssg: TMessage = { userID: message_server_id, message: 'Chat ended', room: room! };
+      setMessages(prev => [...prev, server_mssg]);
       setRoom(null);
     }
 
@@ -82,7 +84,7 @@ function ChatPage({ socket }: { socket: Socket }) {
       .on(SocketEvents.DISCONNECT, onDisconnect)
       .on(SocketEvents.CHAT_START, onChatStart)
       .on(SocketEvents.CHAT_MESSAGE, onChatMessage)
-      .on(SocketEvents.CHAT_END, onChatEnd);
+      .on(SocketEvents.CHAT_END, onChatEnd)
 
     return () => {
       socket.disconnect()

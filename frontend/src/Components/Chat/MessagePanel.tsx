@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { TMessage } from '../../types'
+import { message_server_id, TMessage } from '../../types'
 import styles from './messagePanel.module.css'
 
 export default function MessagePanel({ user, messages }: { user: string, messages: TMessage[] }) {
@@ -31,7 +31,9 @@ export default function MessagePanel({ user, messages }: { user: string, message
         {
           messages.map((mssg, index) => {
             return (
-              <div key={index} className={`${styles["mssg"]} ${(mssg.userID === user) ? styles["mssg-right"] : styles["mssg-left"]}`}>
+              <div key={index} className={
+                `${styles["mssg"]} ${mssg.userID === message_server_id ? styles["mssg-center"] : mssg.userID === user ? styles["mssg-right"] : styles["mssg-left"]}`
+              }>
                 {mssg.message}
               </div>
             )

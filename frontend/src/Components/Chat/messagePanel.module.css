@@ -43,7 +43,6 @@
 
   border-top-left-radius: var(--default-radius);
   border-top-right-radius: var(--default-radius);
-  box-shadow: inset -10px 10px 100vh 0 rgb(255, 255, 255, 0.1);
 
   min-width: 50px;
   max-width: 50%;
@@ -51,18 +50,35 @@
 
 .mssg-left {
   align-self: flex-start;
+  background: linear-gradient(180deg,
+      var(--primary_clr_3) 0%,
+      var(--primary_clr_2) 50%,
+      var(--primary_clr_1) 90%) no-repeat center fixed;
   padding-right: calc(var(--default-padding)*3);
-
-  background: var(--primary-btn-start);
-
   border-bottom-right-radius: var(--default-radius);
 }
 
 .mssg-right {
   align-self: flex-end;
-  background: var(--faint-shadow);
+  background: var(--secondary_clr);
+  box-shadow: inset -10px 10px 100vh 0 rgb(255, 255, 255, 0.1);
   padding-left: calc(var(--default-padding)*3);
   border-bottom-left-radius: var(--default-radius);
+}
+
+.mssg-left+.mssg-right,
+.mssg-left+.mssg-center,
+.mssg-right+.mssg-left,
+.mssg-right+.mssg-center,
+.mssg-center+.mssg-left,
+.mssg-center+.mssg-right {
+  margin-top: calc(var(--default-margin));
+}
+
+.mssg-center {
+  align-self: center;
+  border-radius: var(--default-radius);
+  background: var(--faint-shadow);
 }
 
 @media screen and (max-width: 1280px) {
