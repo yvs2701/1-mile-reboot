@@ -37,6 +37,8 @@ io.on(SocketEvents.CONNECT, (socket) => {
             const room = findPeerForLoneSocket(socket);
             if (room !== null)
                 io.to(room).emit(SocketEvents.CHAT_START, { room });
+            else
+                socket.emit(SocketEvents.NO_PEER_AVAILABLE);
         }
     });
 

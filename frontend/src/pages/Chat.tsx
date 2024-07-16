@@ -6,7 +6,6 @@ import { throttle } from "../utils/throttle";
 import styles from './chat.module.css'
 
 function ChatPage({ socket }: { socket: Socket }) {
-  // TODO: add loading spinner
   // TODO: add an emoji picker
   // TODO: connect peers withing a given distance
 
@@ -32,7 +31,7 @@ function ChatPage({ socket }: { socket: Socket }) {
     socket.emit(SocketEvents.CHAT_SEND, mssg);
     setMessages(prev => [...prev, mssg]);
     setMessageInput('');
-  }, 400) // can run only after 0.4s after the last call
+  }, 500) // can run only after 1/2s after the last call
 
   const keyShortcuts = useCallback((e: KeyboardEvent) => {
     if (e.ctrlKey && e.key === 'Enter') {
@@ -69,8 +68,14 @@ function ChatPage({ socket }: { socket: Socket }) {
       setMessageInput('');
     }
 
+    function onNoPeerAvailable() {
+      // this socket has already been unsubsrcibed from the room, but we will only update it after finding a new peer
+      const server_mssg: TMessage = { userID: message_server_id, message: 'Finding Strangers...', room: room! };
+      setMessages(prev => [...prev, server_mssg]);
+    }
+
     function onChatEnd() {
-      const server_mssg: TMessage = { userID: message_server_id, message: 'Chat ended', room: room! };
+      const server_mssg: TMessage = { userID: message_server_id, message: 'Chat ended. Click next to find strangers.', room: room! };
       setMessages(prev => [...prev, server_mssg]);
       setRoom(null);
     }
@@ -85,6 +90,7 @@ function ChatPage({ socket }: { socket: Socket }) {
       .on(SocketEvents.CHAT_START, onChatStart)
       .on(SocketEvents.CHAT_MESSAGE, onChatMessage)
       .on(SocketEvents.CHAT_END, onChatEnd)
+      .on(SocketEvents.NO_PEER_AVAILABLE, onNoPeerAvailable)
 
     return () => {
       socket.disconnect()
@@ -93,6 +99,7 @@ function ChatPage({ socket }: { socket: Socket }) {
         .off(SocketEvents.CHAT_MESSAGE, onChatMessage)
         .off(SocketEvents.CHAT_START, onChatStart)
         .off(SocketEvents.CHAT_END, onChatEnd)
+        .off(SocketEvents.NO_PEER_AVAILABLE, onNoPeerAvailable)
     };
   }, []);
 

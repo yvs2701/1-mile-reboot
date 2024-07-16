@@ -14,4 +14,5 @@ export enum SocketEvents {
     SKIP_CHAT = 'skip chat', // leave & clear current room and find another peer
     CONNECT = 'connect', // socket connection established
     DISCONNECT = 'disconnect', // socket connection lost
+    NO_PEER_AVAILABLE = 'no peers', // no peer available for chat
 }

@@ -8,6 +8,7 @@ const SocketEvents = Object.freeze({
     CONNECT: 'connect', // socket connected
     DISCONNECT: 'disconnect', // socket disconnected
     DISCONNECTING: 'disconnecting', // socket disconnecting
+    NO_PEER_AVAILABLE: 'no peers', // no peer available for chat
 });
 
 
