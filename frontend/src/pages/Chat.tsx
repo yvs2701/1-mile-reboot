@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ChatPanel from "../Components/Chat/ChatPanel";
-import { TMessage, SocketEvents, message_server_id } from "../types";
+import { TMessage, SocketEvents, message_server_id, SkipBtnStates } from "../types";
 import { Socket } from "socket.io-client";
-import { throttle } from "../utils/throttle";
-import styles from './chat.module.css'
+import styles from './chat.module.css';
 
 function ChatPage({ socket }: { socket: Socket }) {
   // TODO: add an emoji picker
@@ -13,35 +12,86 @@ function ChatPage({ socket }: { socket: Socket }) {
   const [messages, setMessages] = useState<TMessage[]>([]);
   const [messageInput, setMessageInput] = useState<string>('');
   const [room, setRoom] = useState<string | null>(null);
+  const [skipBtn, setSkipBtn] = useState<SkipBtnStates>(SkipBtnStates.NEXT);
+  const skipBtnLastClick = useRef<number>(0);
+  const submitBtnLastClick = useRef<number>(0);
 
-  const handleNextClick = throttle(() => {
-    // TODO: ask for confirmation before skipping
+  const handleNextClick = useCallback(() => {
     if (!socket.connected || userID === '')
       return;
 
-    socket.emit(SocketEvents.SKIP_CHAT, { room });
-  }, 1000) // can run only after 1s after the last call
+    const now = new Date().getTime();
+    if (now - skipBtnLastClick.current < 1500) {
+      // throttled fn - can only run after 1.5s after the last state change
+      return;
+    }
 
-  const handleSubmitClick = throttle(() => {
+    function skipChat() {
+      socket.emit(SocketEvents.SKIP_CHAT, { room })
+      skipBtnLastClick.current = now
+
+      const server_mssg: TMessage = { userID: message_server_id, message: 'Finding Strangers...', room: room! }
+      setMessages(prev => [...prev, server_mssg])
+      setSkipBtn(SkipBtnStates.WAIT)
+    }
+
+    switch (skipBtn) {
+      case SkipBtnStates.NEXT:
+        if (room === null) {
+          // don't ask for confirmation
+          skipChat()
+        } else {
+          setSkipBtn(_ => SkipBtnStates.SURE)
+        }
+        break;
+      case SkipBtnStates.SURE:
+        skipChat()
+        break;
+      default: break;
+    }
+  }, [userID, room, skipBtn])
+
+  useEffect(() => {
+    if (skipBtn === SkipBtnStates.SURE) {
+      const timer = setTimeout(() => {
+        setSkipBtn(SkipBtnStates.NEXT)
+      }, 5000); // if user does't skip in 5 seconds cancel the skip request
+
+      return () => clearTimeout(timer);
+    }
+  }, [skipBtn])
+
+  const handleSubmitClick = useCallback(() => {
     if (!socket.connected || userID === '' || room === null || messageInput.trim() === '')
       return;
 
-    const mssg: TMessage = { userID: socket.id!, message: messageInput.trim(), room: room };
+    const now = new Date().getTime();
+    if (now - submitBtnLastClick.current < 500) {
+      // throttled fn - can only run after 1/2s after the last state change
+      return;
+    }
+    submitBtnLastClick.current = now
 
-    socket.emit(SocketEvents.CHAT_SEND, mssg);
-    setMessages(prev => [...prev, mssg]);
-    setMessageInput('');
-  }, 500) // can run only after 1/2s after the last call
+    const mssg: TMessage = { userID: socket.id!, message: messageInput.trim(), room: room }
+    socket.emit(SocketEvents.CHAT_SEND, mssg)
+
+    setMessages(prev => [...prev, mssg])
+    setMessageInput('')
+  }, [userID, room, messageInput])
 
   const keyShortcuts = useCallback((e: KeyboardEvent) => {
     if (e.ctrlKey && e.key === 'Enter') {
-      handleSubmitClick();
+      e.preventDefault()
+      e.stopPropagation()
+      handleSubmitClick()
     }
     else if (e.key === 'Escape') {
-      handleNextClick();
+      e.preventDefault()
+      e.stopPropagation()
+      handleNextClick()
     }
     return;
-  }, [userID, room, messageInput]);
+  }, [handleNextClick, handleSubmitClick])
 
   useEffect(() => {
     window.addEventListener('keydown', keyShortcuts);
@@ -64,13 +114,19 @@ function ChatPage({ socket }: { socket: Socket }) {
 
     function onChatStart(data: { room: string }) {
       setRoom(data.room);
-      setMessages([]);
+      const server_mssg: TMessage = { userID: message_server_id, message: 'New Chat', room: room! };
+      setMessages([server_mssg]);
       setMessageInput('');
+      setSkipBtn(SkipBtnStates.NEXT);
     }
 
     function onNoPeerAvailable() {
       // this socket has already been unsubsrcibed from the room, but we will only update it after finding a new peer
-      const server_mssg: TMessage = { userID: message_server_id, message: 'Finding Strangers...', room: room! };
+      const server_mssg: TMessage = {
+        userID: message_server_id,
+        message: 'No peer available. You can wait for peers to arrive or come back later.',
+        room: room!
+      };
       setMessages(prev => [...prev, server_mssg]);
     }
 
@@ -105,7 +161,8 @@ function ChatPage({ socket }: { socket: Socket }) {
 
   return (
     <section className={styles['chat-section']}>
-      <ChatPanel user={userID} disabled={room === null}
+      {/* Chat will be disabled if the current user skipped (skipBtn = 'WAIT') or the stranger skipped (room = null) */}
+      <ChatPanel user={userID} disableChat={room === null || skipBtn === SkipBtnStates.WAIT} skipBtnState={skipBtn}
         messages={messages} messageInput={messageInput} setMessageInput={setMessageInput}
         handleNextClick={handleNextClick} handleSubmitClick={handleSubmitClick}
       />

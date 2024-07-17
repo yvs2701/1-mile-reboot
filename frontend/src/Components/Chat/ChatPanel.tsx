@@ -1,6 +1,6 @@
 'use client';
 import styles from './chatpanel.module.css'
-import { TMessage } from '../../types'
+import { SkipBtnStates, TMessage } from '../../types'
 import MessagePanel from './MessagePanel'
 import ChatActions from './chatActions'
 import { Dispatch, KeyboardEventHandler, MouseEventHandler, SetStateAction } from 'react'
@@ -13,15 +13,16 @@ type TProps = {
   handleSubmitClick: MouseEventHandler,
   keyShortcuts?: KeyboardEventHandler,
   messages: TMessage[],
-  disabled?: boolean,
+  disableChat?: boolean,
+  skipBtnState: SkipBtnStates,
 }
 
 export default function ChatPanelLayout({ user, messages, messageInput, setMessageInput,
-  handleNextClick, handleSubmitClick, keyShortcuts, disabled }: TProps) {
+  handleNextClick, handleSubmitClick, keyShortcuts, skipBtnState, disableChat }: TProps) {
   return (
     <div className={styles["panel-wrapper"]}>
       <MessagePanel user={user} messages={messages} />
-      <ChatActions disabled={disabled}
+      <ChatActions disableChat={disableChat} skipBtnState={skipBtnState}
         messageInput={messageInput} setMessageInput={setMessageInput}
         handleNextClick={handleNextClick} handleSubmitClick={handleSubmitClick} keyShortcuts={keyShortcuts} />
     </div>

@@ -49,6 +49,7 @@
 }
 
 .mssg-left {
+  text-align: start;
   align-self: flex-start;
   background-image: linear-gradient(180deg,
       var(--primary_clr_3) 0%,
@@ -62,6 +63,7 @@
 }
 
 .mssg-right {
+  text-align: start;
   align-self: flex-end;
   background: var(--secondary_clr);
   box-shadow: inset -10px 10px 100vh 0 rgb(255, 255, 255, 0.1);
@@ -80,6 +82,7 @@
 }
 
 .mssg-center {
+  text-align: center;
   align-self: center;
   border-radius: var(--default-radius);
   background: var(--faint-shadow);

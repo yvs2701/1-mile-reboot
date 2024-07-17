@@ -6,6 +6,8 @@ export type TMessage = {
 
 export const message_server_id = '#server#'
 
+export enum SkipBtnStates { NEXT, SURE, WAIT }
+
 export enum SocketEvents {
     CHAT_START = 'chat start', // begins a chat
     CHAT_SEND = 'chat send', // send message from one socket to a room
