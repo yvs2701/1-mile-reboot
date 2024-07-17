@@ -55,7 +55,7 @@
 }
 
 .btn-secondary {
-  background-image: var(--secondary_clr);
+  background-color: var(--secondary_clr);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -65,7 +65,7 @@
   }
 
   .btn-secondary:enabled:hover {
-    box-shadow: 0 0 8px 2px var(--faint-shadow);
+   background-color: var(--glow-shadow);
   }
 }
 
@@ -75,14 +75,15 @@
 }
 
 .btn-secondary:enabled:active {
-  background-image: var(--secondary_clr);
+  background-color: var(--glow-shadow);
   box-shadow: 0 0 8px 2px var(--faint-shadow);
 }
 
 .btn:disabled {
-  background-image: var(--secondary_clr) !important;
+  background-color: var(--secondary_clr) !important;
+  background-image: none !important;
   box-shadow: none !important;
-  cursor: not-allowed;
+  cursor: not-allowed !important;
   opacity: 0.8;
 }
 

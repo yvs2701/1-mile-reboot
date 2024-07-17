@@ -6,6 +6,12 @@ export type TMessage = {
 
 export const message_server_id = '#server#'
 
+export enum ServerMessages {
+    NEW_CHAT = 'New Chat',
+    CHAT_ENDED = 'Chat ended. Click next to find strangers.',
+    NO_PEER_AVAILABLE = 'No peers available. You can wait for peers to arrive or come back later.',
+}
+
 export enum SkipBtnStates { NEXT, SURE, WAIT }
 
 export enum SocketEvents {

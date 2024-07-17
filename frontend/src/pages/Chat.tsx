@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import ChatPanel from "../Components/Chat/ChatPanel";
-import { TMessage, SocketEvents, message_server_id, SkipBtnStates } from "../types";
+import { TMessage, SocketEvents, message_server_id, SkipBtnStates, ServerMessages } from "../types";
 import { Socket } from "socket.io-client";
 import styles from './chat.module.css';
 
@@ -38,9 +38,10 @@ function ChatPage({ socket }: { socket: Socket }) {
     switch (skipBtn) {
       case SkipBtnStates.NEXT:
         if (room === null) {
-          // don't ask for confirmation
+          // don't ask for confirmation here
           skipChat()
         } else {
+          // ask for confirmation before exiting a room
           setSkipBtn(_ => SkipBtnStates.SURE)
         }
         break;
@@ -55,7 +56,7 @@ function ChatPage({ socket }: { socket: Socket }) {
     if (skipBtn === SkipBtnStates.SURE) {
       const timer = setTimeout(() => {
         setSkipBtn(SkipBtnStates.NEXT)
-      }, 5000); // if user does't skip in 5 seconds cancel the skip request
+      }, 2000); // if user does't skip in 2 seconds cancel the skip request
 
       return () => clearTimeout(timer);
     }
@@ -114,7 +115,7 @@ function ChatPage({ socket }: { socket: Socket }) {
 
     function onChatStart(data: { room: string }) {
       setRoom(data.room);
-      const server_mssg: TMessage = { userID: message_server_id, message: 'New Chat', room: room! };
+      const server_mssg: TMessage = { userID: message_server_id, message: ServerMessages.NEW_CHAT, room: room! };
       setMessages([server_mssg]);
       setMessageInput('');
       setSkipBtn(SkipBtnStates.NEXT);
@@ -124,14 +125,14 @@ function ChatPage({ socket }: { socket: Socket }) {
       // this socket has already been unsubsrcibed from the room, but we will only update it after finding a new peer
       const server_mssg: TMessage = {
         userID: message_server_id,
-        message: 'No peer available. You can wait for peers to arrive or come back later.',
+        message: ServerMessages.NO_PEER_AVAILABLE,
         room: room!
       };
       setMessages(prev => [...prev, server_mssg]);
     }
 
     function onChatEnd() {
-      const server_mssg: TMessage = { userID: message_server_id, message: 'Chat ended. Click next to find strangers.', room: room! };
+      const server_mssg: TMessage = { userID: message_server_id, message: ServerMessages.CHAT_ENDED, room: room! };
       setMessages(prev => [...prev, server_mssg]);
       setRoom(null);
     }

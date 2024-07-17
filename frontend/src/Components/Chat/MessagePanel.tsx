@@ -11,7 +11,7 @@ export default function MessagePanel({ user, messages }: { user: string, message
       */
     if (scrollContainer.current !== null && messages.length > 0) {
       // if the last message was sent by the user, scroll to the bottom
-      if (messages[messages.length - 1].userID === user) {
+      if (messages[messages.length - 1].userID === user || messages[messages.length - 1].userID === message_server_id) {
         scrollContainer.current.scrollTop = scrollContainer.current.scrollHeight
       } else {
         // find the height of the content that is overflown from the bottom
