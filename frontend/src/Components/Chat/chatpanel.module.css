@@ -1,4 +1,6 @@
 .panel-wrapper {
+  /* relative positioning to control the EmojiPicker position */
+  position: relative;
   display: grid;
   /* 60px is the height of chatActions */
   grid-template-rows: auto 60px;

@@ -13,33 +13,111 @@
 }
 
 .chatbar {
-  border: 4px solid var(--foreground-rgb);
-  border-radius: calc(var(--default-radius));
-  
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
   margin: 0 var(--default-margin);
+}
+
+.chatbar>.emojiBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: var(--secondary_clr);
+  border: 4px solid var(--foreground-rgb);
+  border-radius: 0 var(--default-radius) var(--default-radius) 0;
+  border-left-width: 2px;
+
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 50px;
+
+  cursor: pointer;
+  transition: border 0.2s;
+}
+
+.chatbar>textarea {
+  background-color: var(--secondary_clr);
+  border: 4px solid var(--foreground-rgb);
+  border-radius: var(--default-radius) 0 0 var(--default-radius);
+  border-right-width: 2px;
+
+  flex-grow: 1;
+  flex-shrink: 1;
+  width: 100%;
+  resize: none;
+
   padding: 8px;
-  
+
   font-size: 1rem;
   font-family: inherit;
   color: var(--font-rgb);
 
-  height: 100%;
-  width: 100%;
-  resize: none;
   transition: border 0.2s;
 }
 
-.chatbar::placeholder {
+.chatbar>textarea::placeholder {
   color: var(--glow-shadow);
 }
 
-.chatbar:focus {
-  border: 4px solid var(--faint-shadow);
+.chatbar>textarea:focus,
+.chatbar>.emojiBtn:focus-within {
+  border-color: var(--faint-shadow);
   outline: none;
 }
 
-.chatbar:disabled {
+.chatbar>textarea:disabled,
+.chatbar>.emojiBtn.emojiBtnDisabled {
   cursor: not-allowed;
+  /* // FIXME remove opacity and use solid colors */
+  opacity: 0.8;
   background-color: var(--foreground-rgb);
-  opacity: o.8;
+  border-color: var(--foreground-rgb);
+}
+
+.chatbar>.emojiBtn.emojiBtnDisabled>img {
+  filter: brightness(0.5);
+}
+
+aside.EmojiPicker {
+  position: absolute;
+  right: 0;
+  bottom: 60px;
+  opacity: 1;
+  animation: appear 0.2s ease-in alternate;
+  margin-bottom: calc(var(--default-margin) * 3);
+  --epr-hover-bg-color: var(--secondary_clr);
+  --epr-bg-color: var(--background-rgb);
+  --epr-category-label-bg-color: var(--background-rgb);
+  --epr-text-color: var(--font-rgb);
+  --epr-search-input-bg-color: var(--secondary_clr);
+  --epr-search-input-bg-color-active: var(--foreground-rgb);
+  --epr-search-border-color: var(--glow-shadow);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .chatbar>.emojiBtn {
+    display: none;
+  }
+
+  .chatbar>textarea {
+    border-radius: var(--default-radius);
+    border-right-width: 4px;
+  }
 }

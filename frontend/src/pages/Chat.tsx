@@ -5,7 +5,6 @@ import { Socket } from "socket.io-client";
 import styles from './chat.module.css';
 
 function ChatPage({ socket }: { socket: Socket }) {
-  // TODO: add an emoji picker
   // TODO: connect peers withing a given distance
 
   const [userID, setUserID] = useState<string>('');
