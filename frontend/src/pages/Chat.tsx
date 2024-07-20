@@ -1,3 +1,4 @@
+'use client';
 import { useCallback, useEffect, useRef, useState } from "react";
 import ChatPanel from "../Components/Chat/ChatPanel";
 import { TMessage, SocketEvents, message_server_id, SkipBtnStates, ServerMessages } from "../types";
@@ -79,7 +80,7 @@ function ChatPage({ socket }: { socket: Socket }) {
     setMessageInput('')
   }, [userID, room, messageInput])
 
-  const keyShortcuts = useCallback((e: KeyboardEvent) => {
+  const keyShortcuts = useCallback((e: globalThis.KeyboardEvent) => {
     if (e.ctrlKey && e.key === 'Enter') {
       e.preventDefault()
       e.stopPropagation()
@@ -94,8 +95,9 @@ function ChatPage({ socket }: { socket: Socket }) {
   }, [handleNextClick, handleSubmitClick])
 
   useEffect(() => {
-    window.addEventListener('keydown', keyShortcuts);
-    return () => window.removeEventListener('keydown', keyShortcuts);
+    const body = document.getElementsByTagName('body')[0];
+    body.addEventListener('keydown', keyShortcuts);
+    return () => body.removeEventListener('keydown', keyShortcuts);
   }, [keyShortcuts]);
 
   useEffect(() => {
@@ -128,6 +130,7 @@ function ChatPage({ socket }: { socket: Socket }) {
         room: room!
       };
       setMessages(prev => [...prev, server_mssg]);
+      setSkipBtn(SkipBtnStates.WAIT);
     }
 
     function onChatEnd() {
