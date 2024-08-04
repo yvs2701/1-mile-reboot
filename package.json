@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "express": "^4.19.2",
+    "kd-tree-javascript": "^1.0.3",
     "socket.io": "^4.7.5"
   },
   "devDependencies": {

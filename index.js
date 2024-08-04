@@ -12,8 +12,6 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server);
 
-app.use(express.static(path.join(__dirname, './frontend/build')));
-
 io.on(SocketEvents.CONNECT, (socket) => {
     console.group('New Socket Connection: ' + socket.id);
 
@@ -68,6 +66,16 @@ io.on(SocketEvents.CONNECT, (socket) => {
     console.groupEnd();
 });
 
+app.use(express.static(path.join(__dirname, './frontend/build')));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, './frontend/build', 'index.html'));
+});
+
+app.get('*', (req, res) => {
+    // permanent redirect to '/' along with relevant status code
+    res.redirect('/');
+});
 
 server.listen(port, () => {
     console.log(`Server listening on  http://localhost:${port}/`);

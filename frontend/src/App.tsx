@@ -3,16 +3,20 @@ import {
   Routes,
   Route
 } from 'react-router-dom'
-import Login from './pages/Login'
-import ChatPage from './pages/Chat'
+import Landing from './pages/Landing'
+import ChatPage from './pages/ChatPage'
 import Navbar from './Components/Navbar/Navbar'
 import { socket } from "./utils/socket";
 import { useEffect, useState } from 'react';
 import { SocketEvents } from './types';
+import LocationProtectedRoutes from './Components/ProtectedRoutes/PrivateRoutes';
+import { useGeolocated } from 'react-geolocated';
+import { geolocatedOptions } from './utils/configs';
 
 function App() {
 
   const [isConnected, setIsConnected] = useState(socket.connected);
+  const geoLoc = useGeolocated(geolocatedOptions);
 
   useEffect(() => {
     function onConnect() {
@@ -34,14 +38,17 @@ function App() {
     }
   }, [])
 
+  // FIXME - Reloading router should not redirect it back to the landing page (unless not needed)
   return (
     <>
-      <Navbar isConnected={isConnected} />
+      <Navbar isConnected={isConnected} geoLoc={geoLoc} />
       <div id='app'>
         <Router>
           <Routes>
-            <Route path='/chat' element={<ChatPage socket={socket} />} />
-            <Route path='/' element={<Login />} />
+            <Route element={<LocationProtectedRoutes geoLoc={geoLoc} />}>
+              <Route path='/chat' element={<ChatPage socket={socket} geoLoc={geoLoc} />} />
+            </Route>
+            <Route path='/' element={<Landing geoLoc={geoLoc} />} />
           </Routes>
         </Router >
       </div>

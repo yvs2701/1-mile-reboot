@@ -1,11 +1,12 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from "react";
+import { GeolocatedResult } from "react-geolocated";
 import ChatPanel from "../Components/Chat/ChatPanel";
 import { TMessage, SocketEvents, message_server_id, SkipBtnStates, ServerMessages } from "../types";
 import { Socket } from "socket.io-client";
-import styles from './chat.module.css';
+import styles from './chatpage.module.css';
 
-function ChatPage({ socket }: { socket: Socket }) {
+function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult }) {
   // TODO: connect peers withing a given distance
 
   const [userID, setUserID] = useState<string>('');
@@ -103,6 +104,8 @@ function ChatPage({ socket }: { socket: Socket }) {
   useEffect(() => {
     if (!socket.connected) {
       socket.connect();
+      console.log(geoLoc.coords);
+      
     }
 
     function onConnect() {
