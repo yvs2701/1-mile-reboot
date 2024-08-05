@@ -14,8 +14,10 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
   const [messageInput, setMessageInput] = useState<string>('');
   const [room, setRoom] = useState<string | null>(null);
   const [skipBtn, setSkipBtn] = useState<SkipBtnStates>(SkipBtnStates.NEXT);
+
   const skipBtnLastClick = useRef<number>(0);
   const submitBtnLastClick = useRef<number>(0);
+  const locReportTimer = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const handleNextClick = useCallback(() => {
     if (!socket.connected || userID === '')
@@ -28,6 +30,7 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
     }
 
     function skipChat() {
+      clearTimeout(locReportTimer.current);
       socket.emit(SocketEvents.SKIP_CHAT, { room })
       skipBtnLastClick.current = now
 
@@ -53,7 +56,7 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
     }
   }, [userID, room, skipBtn])
 
-  useEffect(() => {
+  useEffect(() => { // resets the skipBtn state after 2 seconds
     if (skipBtn === SkipBtnStates.SURE) {
       const timer = setTimeout(() => {
         setSkipBtn(SkipBtnStates.NEXT)
@@ -95,17 +98,23 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
     return;
   }, [handleNextClick, handleSubmitClick])
 
-  useEffect(() => {
+  useEffect(() => { // adds event listeners for keyboard shortcuts
     const body = document.getElementsByTagName('body')[0];
     body.addEventListener('keydown', keyShortcuts);
     return () => body.removeEventListener('keydown', keyShortcuts);
   }, [keyShortcuts]);
 
-  useEffect(() => {
+  useEffect(() => { // component mount useEffect
     if (!socket.connected) {
       socket.connect();
-      console.log(geoLoc.coords);
-      
+    }
+
+    function locationReport() {
+      if (geoLoc.isGeolocationAvailable && geoLoc.isGeolocationEnabled) {
+        socket.emit(SocketEvents.LOCATION_REPORT, { latitude: geoLoc.coords?.latitude, longitude: geoLoc.coords?.longitude });
+      }
+
+      locReportTimer.current = setTimeout(locationReport, 60000); // report location every minute(= 60000 ms)
     }
 
     function onConnect() {
@@ -123,6 +132,7 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
       setMessages([server_mssg]);
       setMessageInput('');
       setSkipBtn(SkipBtnStates.NEXT);
+      locationReport();
     }
 
     function onNoPeerAvailable() {
@@ -140,6 +150,7 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
       const server_mssg: TMessage = { userID: message_server_id, message: ServerMessages.CHAT_ENDED, room: room! };
       setMessages(prev => [...prev, server_mssg]);
       setRoom(null);
+      clearTimeout(locReportTimer.current);
     }
 
     function onChatMessage(data: TMessage) {
@@ -155,7 +166,8 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
       .on(SocketEvents.NO_PEER_AVAILABLE, onNoPeerAvailable)
 
     return () => {
-      socket.disconnect()
+      clearTimeout(locReportTimer.current)
+      socket
         .off(SocketEvents.CONNECT, onConnect)
         .off(SocketEvents.DISCONNECT, onDisconnect)
         .off(SocketEvents.CHAT_MESSAGE, onChatMessage)

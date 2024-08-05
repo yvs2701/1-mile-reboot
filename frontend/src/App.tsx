@@ -10,18 +10,34 @@ import { socket } from "./utils/socket";
 import { useEffect, useState } from 'react';
 import { SocketEvents } from './types';
 import LocationProtectedRoutes from './Components/ProtectedRoutes/PrivateRoutes';
-import { useGeolocated } from 'react-geolocated';
+import { GeolocatedResult, useGeolocated } from 'react-geolocated';
 import { geolocatedOptions } from './utils/configs';
 
 function App() {
 
   const [isConnected, setIsConnected] = useState(socket.connected);
-  const geoLoc = useGeolocated(geolocatedOptions);
+  const [peerDistance, updateDistance] = useState<number | null>(null);
+  //FIXME - Firefox has all the parameters in coords as undefined
+  const geoLoc = useGeolocated({
+    ...geolocatedOptions,
+    onError: (error) => {
+      console.group('Geolocation error');
+      console.error('Error getting location', error);
+      console.groupEnd();
+    }
+  }) as GeolocatedResult & { error: string | null };
 
   useEffect(() => {
+    //FIXME - Error check for data coming from the server everywhere in the app
     function onConnect() {
       console.log('Connected socket');
       setIsConnected(true);
+    }
+
+    function onDistanceUpdate(data: { squaredEuclideanDistance: number }) {
+      const peerDistance = Math.sqrt(data.squaredEuclideanDistance);
+      console.log('Distance updated', peerDistance);
+      updateDistance(peerDistance);
     }
 
     function onDisconnect() {
@@ -29,19 +45,34 @@ function App() {
       setIsConnected(false);
     }
 
-    socket.on(SocketEvents.CONNECT, onConnect);
-    socket.on(SocketEvents.DISCONNECT, onDisconnect);
+    function onSkipChat() {
+      updateDistance(null);
+    }
+    function onChatEnd() {
+      updateDistance(null);
+    }
+
+    socket
+      .on(SocketEvents.CONNECT, onConnect)
+      .on(SocketEvents.DISTANCE_UPDATE, onDistanceUpdate)
+      .on(SocketEvents.SKIP_CHAT, onSkipChat)
+      .on(SocketEvents.CHAT_END, onChatEnd)
+      .on(SocketEvents.DISCONNECT, onDisconnect)
 
     return () => {
-      socket.off(SocketEvents.CONNECT, onConnect);
-      socket.off(SocketEvents.DISCONNECT, onDisconnect);
+      socket.disconnect()
+        .off(SocketEvents.CONNECT, onConnect)
+        .off(SocketEvents.DISTANCE_UPDATE, onDistanceUpdate)
+        .off(SocketEvents.SKIP_CHAT, onSkipChat)
+        .off(SocketEvents.CHAT_END, onChatEnd)
+        .off(SocketEvents.DISCONNECT, onDisconnect)
     }
   }, [])
 
   // FIXME - Reloading router should not redirect it back to the landing page (unless not needed)
   return (
     <>
-      <Navbar isConnected={isConnected} geoLoc={geoLoc} />
+      <Navbar isConnected={isConnected} geoLoc={geoLoc} peerDistance={peerDistance} />
       <div id='app'>
         <Router>
           <Routes>

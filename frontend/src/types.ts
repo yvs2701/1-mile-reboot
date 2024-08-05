@@ -20,6 +20,8 @@ export enum SocketEvents {
     CHAT_MESSAGE = 'chat message', // receive message from a room
     CHAT_END = 'chat end', // ends a chat and clear rooms
     SKIP_CHAT = 'skip chat', // leave & clear current room and find another peer
+    LOCATION_REPORT = 'loc up', // send location report to server
+    DISTANCE_UPDATE = 'dist up', // receive distance update from server
     CONNECT = 'connect', // socket connection established
     DISCONNECT = 'disconnect', // socket connection lost
     NO_PEER_AVAILABLE = 'no peers', // no peer available for chat

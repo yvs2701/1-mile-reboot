@@ -3,7 +3,7 @@ import styles from './navbar.module.css'
 import logo from '../../assets/logo.png'
 import { GeolocatedResult } from 'react-geolocated'
 
-function Navbar({ isConnected, geoLoc }: { isConnected: boolean, geoLoc: GeolocatedResult }) {
+function Navbar({ isConnected, geoLoc, peerDistance }: { isConnected: boolean, geoLoc: GeolocatedResult, peerDistance: number | null }) {
 
   return (
     <nav className={styles['navbar']}>
@@ -12,8 +12,9 @@ function Navbar({ isConnected, geoLoc }: { isConnected: boolean, geoLoc: Geoloca
         <h3 className={styles['navbar-brand']}>1-mile</h3>
       </div>
       <div className={styles['navbar-right']}>
-        <span>Socket : {isConnected ? 'connected' : 'not connected'}</span>
-        <span>{geoLoc.coords?.latitude}, {geoLoc.coords?.longitude}</span>
+        <span>Socket {isConnected ? 'connected' : 'not connected'}&nbsp;</span>
+        <span>Distance: {peerDistance}&nbsp;</span>
+        <span>Lat: {geoLoc.coords?.latitude}, Long: {geoLoc.coords?.longitude}</span>
       </div>
     </nav>
   )

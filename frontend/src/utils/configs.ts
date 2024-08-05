@@ -9,9 +9,4 @@ export const geolocatedOptions: GeolocatedConfig = {
   watchLocationPermissionChange: true,
   suppressLocationOnMount: false,
   isOptimisticGeolocationEnabled: false,
-  onError: (error) => {
-    console.group('Location Error')
-    console.error(error)
-    console.groupEnd()
-  }
 }
