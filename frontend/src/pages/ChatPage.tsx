@@ -1,12 +1,11 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from "react";
-import { GeolocatedResult } from "react-geolocated";
 import ChatPanel from "../Components/Chat/ChatPanel";
 import { TMessage, SocketEvents, message_server_id, SkipBtnStates, ServerMessages } from "../types";
 import { Socket } from "socket.io-client";
 import styles from './chatpage.module.css';
 
-function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult }) {
+function ChatPage({ socket }: { socket: Socket }) {
   // TODO: connect peers withing a given distance
 
   const [userID, setUserID] = useState<string>('');
@@ -17,7 +16,6 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
 
   const skipBtnLastClick = useRef<number>(0);
   const submitBtnLastClick = useRef<number>(0);
-  const locReportTimer = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const handleNextClick = useCallback(() => {
     if (!socket.connected || userID === '')
@@ -30,7 +28,6 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
     }
 
     function skipChat() {
-      clearTimeout(locReportTimer.current);
       socket.emit(SocketEvents.SKIP_CHAT, { room })
       skipBtnLastClick.current = now
 
@@ -109,14 +106,6 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
       socket.connect();
     }
 
-    function locationReport() {
-      if (geoLoc.isGeolocationAvailable && geoLoc.isGeolocationEnabled) {
-        socket.emit(SocketEvents.LOCATION_REPORT, { latitude: geoLoc.coords?.latitude, longitude: geoLoc.coords?.longitude });
-      }
-
-      locReportTimer.current = setTimeout(locationReport, 60000); // report location every minute(= 60000 ms)
-    }
-
     function onConnect() {
       setUserID(socket.id!);
     }
@@ -132,7 +121,6 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
       setMessages([server_mssg]);
       setMessageInput('');
       setSkipBtn(SkipBtnStates.NEXT);
-      locationReport();
     }
 
     function onNoPeerAvailable() {
@@ -150,7 +138,6 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
       const server_mssg: TMessage = { userID: message_server_id, message: ServerMessages.CHAT_ENDED, room: room! };
       setMessages(prev => [...prev, server_mssg]);
       setRoom(null);
-      clearTimeout(locReportTimer.current);
     }
 
     function onChatMessage(data: TMessage) {
@@ -166,7 +153,6 @@ function ChatPage({ socket, geoLoc }: { socket: Socket, geoLoc: GeolocatedResult
       .on(SocketEvents.NO_PEER_AVAILABLE, onNoPeerAvailable)
 
     return () => {
-      clearTimeout(locReportTimer.current)
       socket
         .off(SocketEvents.CONNECT, onConnect)
         .off(SocketEvents.DISCONNECT, onDisconnect)

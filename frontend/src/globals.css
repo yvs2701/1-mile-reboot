@@ -3,9 +3,9 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 
-  --primary_clr_1: rgb(50,137,235);
-  --primary_clr_2: rgb(102,89,235);
-  --primary_clr_3: rgb(154,50,235);
+  --primary_clr_1: rgb(50, 137, 235);
+  --primary_clr_2: rgb(102, 89, 235);
+  --primary_clr_3: rgb(154, 50, 235);
   --secondary_clr: rgb(37, 37, 39);
   --glow-shadow: rgba(255, 255, 255, 0.4);
   --faint-shadow: rgba(128, 128, 128, 0.1);
@@ -101,4 +101,13 @@ body {
   justify-content: center;
   height: calc(100vh - 66px);
   padding: calc(var(--default-padding));
+}
+
+.thin-hidden-scrollbar {
+  scrollbar-width: thin !important;
+  scrollbar-color: transparent transparent;
+}
+
+.thin-hidden-scrollbar:hover {
+  scrollbar-color: var(--glow-shadow) var(--faint-shadow) !important;
 }

@@ -18,13 +18,16 @@ const SocketEvents = Object.freeze({
 
 const PEER_QUEUE = [];
 
-//FIXME wrong distance from euclidean method
-// { latitude: 26.8679574, longitude: 81.025611 } { latitude: 19.075984, longitude: 72.877656 }
-// Distance update for room: CPlWALektWAIolzWAAAF#0rokS9eh5Wu9wPJOAAAJ distance 127.10402014833255
-const squaredEuclideanDistance = (coords1, coords2) => {
-    const x = coords1.latitude - coords2.latitude;
-    const y = coords1.longitude - coords2.longitude;
-    return x * x + y * y;
+const haversineDistance = (coords1, coords2) => {
+    const toRad = (degrees) => degrees * Math.PI / 180;
+    const R = 6371; // Radius of the earth in km
+    const dLat = toRad(coords2.latitude - coords1.latitude);
+    const dLon = toRad(coords2.longitude - coords1.longitude);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(coords1.latitude)) * Math.cos(toRad(coords2.latitude)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
 }
 
 const initSocketData = (socket) => {
@@ -40,16 +43,15 @@ const updateDistanceCron = (room, io) => {
     // update distance to peers in the room every minute
     const job = cron.schedule('* * * * *', async () => {
         const [socket1, socket2] = await io.in(room).fetchSockets();
-        console.log(socket1.data.coords, socket2.data.coords);
+        console.log('Socket1 coords:', socket1.data.coords, 'Socket2 coords:',socket2.data.coords);
 
         const coords1 = socket1.data.coords;
         const coords2 = socket2.data.coords;
 
-        if (coords1.hasOwnProperty('latitude') && coords2.hasOwnProperty('latitude') &&
-            coords1.hasOwnProperty('longitude') && coords2.hasOwnProperty('longitude')) {
-            const distance = squaredEuclideanDistance(coords1, coords2);
+        if (coords1.latitude !== undefined && coords2.latitude !== undefined && coords1.longitude !== undefined && coords2.longitude !== undefined) {
+            const distance = haversineDistance(coords1, coords2);
             console.log('Distance update for room:', room, 'distance', distance);
-            io.to(room).emit(SocketEvents.DISTANCE_UPDATE, { squaredEuclideanDistance: distance });
+            io.to(room).emit(SocketEvents.DISTANCE_UPDATE, { distance: distance });
         }
     }, { timezone: 'Asia/Kolkata' });
 
@@ -116,7 +118,7 @@ module.exports = {
     PEER_QUEUE,
     initSocketData,
     findPeerForLoneSocket,
-    squaredEuclideanDistance,
+    haversineDistance,
     connectPeers,
     stopDistanceUpdates,
     updateDistanceCron,

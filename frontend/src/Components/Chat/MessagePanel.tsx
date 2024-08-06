@@ -26,7 +26,7 @@ export default function MessagePanel({ user, messages }: { user: string, message
   }, [messages]);
 
   return (
-    <div className={styles["message-screen"]} ref={scrollContainer}>
+    <div className={`${styles["message-screen"]} thin-hidden-scrollbar`} ref={scrollContainer}>
       <div className={styles["scrollable"]}>
         {
           messages.map((mssg, index) => {

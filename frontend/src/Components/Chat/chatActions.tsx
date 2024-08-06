@@ -77,7 +77,8 @@ export default function ChatActions({ messageInput, setMessageInput, handleNextC
         />
 
         <span className={styles.chatbar}>
-          <textarea value={messageInput}
+          <textarea className='thin-hidden-scrollbar'
+            value={messageInput}
             placeholder="Write a message..."
             onKeyDown={keyShortcuts}
             onChange={(e) => setMessageInput(e.target.value)}

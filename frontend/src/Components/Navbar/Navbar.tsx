@@ -1,9 +1,8 @@
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import styles from './navbar.module.css'
 import logo from '../../assets/logo.png'
-import { GeolocatedResult } from 'react-geolocated'
 
-function Navbar({ isConnected, geoLoc, peerDistance }: { isConnected: boolean, geoLoc: GeolocatedResult, peerDistance: number | null }) {
+function Navbar({ isConnected, peerDistance }: { isConnected: boolean, peerDistance: string | number | null }) {
 
   return (
     <nav className={styles['navbar']}>
@@ -13,8 +12,7 @@ function Navbar({ isConnected, geoLoc, peerDistance }: { isConnected: boolean, g
       </div>
       <div className={styles['navbar-right']}>
         <span>Socket {isConnected ? 'connected' : 'not connected'}&nbsp;</span>
-        <span>Distance: {peerDistance}&nbsp;</span>
-        <span>Lat: {geoLoc.coords?.latitude}, Long: {geoLoc.coords?.longitude}</span>
+        <span>Distance: {peerDistance !== null ? peerDistance : '--'}km&nbsp;</span>
       </div>
     </nav>
   )
