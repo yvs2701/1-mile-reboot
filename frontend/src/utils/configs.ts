@@ -1,4 +1,7 @@
+import { io } from 'socket.io-client';
 import { GeolocatedConfig } from "react-geolocated"
+
+export const socket = io(import.meta.env.VITE_SOCKET_URL, { autoConnect: false });
 
 export const geolocatedOptions: GeolocatedConfig = {
   positionOptions: {

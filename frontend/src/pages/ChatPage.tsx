@@ -1,18 +1,16 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from "react";
 import ChatPanel from "../Components/Chat/ChatPanel";
-import { TMessage, SocketEvents, message_server_id, SkipBtnStates, ServerMessages } from "../types";
+import { TMessage, SocketEvents, message_server_id, SkipBtnStates, ServerMessages } from "../utils/types";
 import { Socket } from "socket.io-client";
 import styles from './chatpage.module.css';
 
 function ChatPage({ socket }: { socket: Socket }) {
-  // TODO: connect peers withing a given distance
-
   const [userID, setUserID] = useState<string>('');
-  const [messages, setMessages] = useState<TMessage[]>([]);
+  const [messages, setMessages] = useState<TMessage[]>([{ userID: message_server_id, message: ServerMessages.INIT }]);
   const [messageInput, setMessageInput] = useState<string>('');
   const [room, setRoom] = useState<string | null>(null);
-  const [skipBtn, setSkipBtn] = useState<SkipBtnStates>(SkipBtnStates.NEXT);
+  const [skipBtn, setSkipBtn] = useState<SkipBtnStates>(SkipBtnStates.WAIT);
 
   const skipBtnLastClick = useRef<number>(0);
   const submitBtnLastClick = useRef<number>(0);
@@ -27,7 +25,7 @@ function ChatPage({ socket }: { socket: Socket }) {
       return;
     }
 
-    function skipChat() {
+    const skipChat = () => {
       socket.emit(SocketEvents.SKIP_CHAT, { room })
       skipBtnLastClick.current = now
 
@@ -117,7 +115,7 @@ function ChatPage({ socket }: { socket: Socket }) {
 
     function onChatStart(data: { room: string }) {
       setRoom(data.room);
-      const server_mssg: TMessage = { userID: message_server_id, message: ServerMessages.NEW_CHAT, room: room! };
+      const server_mssg: TMessage = { userID: message_server_id, message: ServerMessages.NEW_CHAT };
       setMessages([server_mssg]);
       setMessageInput('');
       setSkipBtn(SkipBtnStates.NEXT);
@@ -135,7 +133,7 @@ function ChatPage({ socket }: { socket: Socket }) {
     }
 
     function onChatEnd() {
-      const server_mssg: TMessage = { userID: message_server_id, message: ServerMessages.CHAT_ENDED, room: room! };
+      const server_mssg: TMessage = { userID: message_server_id, message: ServerMessages.CHAT_ENDED };
       setMessages(prev => [...prev, server_mssg]);
       setRoom(null);
     }

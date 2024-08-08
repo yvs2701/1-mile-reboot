@@ -1,10 +1,11 @@
 import { Navigate, Outlet } from "react-router-dom"
 import { GeolocatedResult } from "react-geolocated"
 
-const LocationProtectedRoutes = ({ geoLoc }: {geoLoc: GeolocatedResult}) => {
+const LocationProtectedRoutes = ({ geoLoc }: { geoLoc: GeolocatedResult }) => {
 
   return (
-    geoLoc.isGeolocationAvailable && geoLoc.isGeolocationEnabled ? <Outlet /> : <Navigate to="/" />
+    geoLoc.isGeolocationAvailable && geoLoc.isGeolocationEnabled && geoLoc.coords !== undefined &&
+      geoLoc.coords.latitude !== undefined && geoLoc.coords.longitude !== undefined ? <Outlet /> : <Navigate to="/" />
   )
 }
 

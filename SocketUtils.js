@@ -1,7 +1,8 @@
-const cron = require('node-cron');
+import { schedule } from 'node-cron';
+import { getDistance } from 'geolib';
 
 // Enum for custom socket events
-const SocketEvents = Object.freeze({
+export const SocketEvents = Object.freeze({
     CHAT_START: 'chat start', // begins a chat
     CHAT_SEND: 'chat send', // send message from one socket to a room
     CHAT_MESSAGE: 'chat message', // receive message from a room
@@ -16,62 +17,76 @@ const SocketEvents = Object.freeze({
 });
 
 
-const PEER_QUEUE = [];
+export const PEER_QUEUE = [];
+const ONE_MILE = 1609.34; // 1.6 km
+const FIVE_MILES = 8046.72; // 8km
 
-const haversineDistance = (coords1, coords2) => {
-    const toRad = (degrees) => degrees * Math.PI / 180;
-    const R = 6371; // Radius of the earth in km
-    const dLat = toRad(coords2.latitude - coords1.latitude);
-    const dLon = toRad(coords2.longitude - coords1.longitude);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(coords1.latitude)) * Math.cos(toRad(coords2.latitude)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in km
-}
-
-const initSocketData = (socket) => {
+export const initSocketData = (socket) => {
     /* from 'react-geolocated' lib:
     coords: { latitude, longitude, altitude, accuracy, altitudeAccuracy, heading, speed } */
     socket.data = {
         coords: {},
         distanceUpdates: null,
+        receivedLocation: false,
     };
 }
 
-const updateDistanceCron = (room, io) => {
+export const destroySocket = (socket, io) => {
+    // remove socket from the queue
+    const idx = PEER_QUEUE.indexOf(socket);
+    if (idx !== -1)
+        PEER_QUEUE.splice(idx, 1);
+    else {
+        for (const room of socket.rooms) {
+            if (room !== socket.id) {
+                socket.broadcast.to(room).emit(SocketEvents.CHAT_END); // broadcast to all other peers in the room except socket
+                io.in(room).socketsLeave(room);
+                console.log('Cleaned room', room);
+            }
+        }
+    }
+}
+
+const calcDistance = (coords1, coords2) => {
+    return getDistance(coords1, coords2, 10); // in meters
+}
+
+export const updateDistanceCron = (room, io) => {
     // update distance to peers in the room every minute
-    const job = cron.schedule('* * * * *', async () => {
+    return schedule('* * * * *', async () => {
         const [socket1, socket2] = await io.in(room).fetchSockets();
-        console.log('Socket1 coords:', socket1.data.coords, 'Socket2 coords:',socket2.data.coords);
 
         const coords1 = socket1.data.coords;
         const coords2 = socket2.data.coords;
 
         if (coords1.latitude !== undefined && coords2.latitude !== undefined && coords1.longitude !== undefined && coords2.longitude !== undefined) {
-            const distance = haversineDistance(coords1, coords2);
-            console.log('Distance update for room:', room, 'distance', distance);
-            io.to(room).emit(SocketEvents.DISTANCE_UPDATE, { distance: distance });
+            const d = calcDistance(coords1, coords2) / 1000; // in km
+            io.to(room).emit(SocketEvents.DISTANCE_UPDATE, { distance: d });
+            console.log('Distance between peers in room:', room, 'is', d);
         }
-    }, { timezone: 'Asia/Kolkata' });
-
-    return job;
+    }, { timezone: 'Asia/Kolkata',  });
 }
 
 
-const stopDistanceUpdates = (socket) => {
+export const stopDistanceUpdates = (socket) => {
     if (socket.data.distanceUpdates !== null) {
         socket.data.distanceUpdates.stop();
         socket.data.distanceUpdates = null;
     }
 }
 
-const connectPeers = (socket, io) => {
-    const { room, peer } = findPeerForLoneSocket(socket);
-    if (room !== null) {
+export const connectPeers = (socket, io) => {
+    console.log('socket id:', socket.id, 'data:', socket.data);
+    if (socket.data.coords.latitude === undefined || socket.data.coords.longitude === undefined) {
+        return;
+    }
+    console.group('Finding peer for ' + socket.id);
+    const peer = findPeerForLoneSocket(socket);
+    if (peer !== null) {
+        const room = socket.id + '#' + peer.id;
         peer.join(room);
         socket.join(room);
-        console.log(socket.id + ' and ' + peer.id + ' joined room ' + room);
+        console.log(socket.id, 'and', peer.id, 'joined room', room);
         io.to(room).emit(SocketEvents.CHAT_START, { room });
 
         const job = updateDistanceCron(room, io);
@@ -80,25 +95,27 @@ const connectPeers = (socket, io) => {
     }
     else {
         socket.emit(SocketEvents.NO_PEER_AVAILABLE);
-    }
-}
-
-const findPeerForLoneSocket = (socket) => {
-    if (PEER_QUEUE.indexOf(socket) !== -1) // if socket is in the queue
-        return { room: null, peer: null };
-    console.group('Finding peer for ' + socket.id);
-    if (PEER_QUEUE.length > 0) {
-        const peer = PEER_QUEUE.shift() ?? null;
-        console.log(peer.id + ' popped from queue');
-
-        const room = socket.id + '#' + peer.id;
-
-        return { room, peer };
-    } else {
-        PEER_QUEUE.push(socket);
-        console.log('No peer found. ' + socket.id + ' pushed to queue\n');
+        console.log('No peer found.', socket.id, 'pushed to queue');
     }
     console.groupEnd();
+}
+
+const withinRange = (socket, peer) => {
+    const coords = socket.data.coords;
+    const peerCoords = peer.data.coords;
+    const d = calcDistance(coords, peerCoords);
+    return d <= FIVE_MILES && d >= ONE_MILE;
+}
+
+//TODO - instead of a peer queue use MongoDB to store { socket.id, socket.data.coords }
+export const findPeerForLoneSocket = (socket) => {
+    if (PEER_QUEUE.indexOf(socket) === -1) {
+        const matched_peer_idx = PEER_QUEUE.findIndex(peer => withinRange(socket, peer));
+        if (matched_peer_idx !== -1) {
+            return PEER_QUEUE.splice(matched_peer_idx, 1)[0];
+        }
+        PEER_QUEUE.push(socket);
+    }
 
     // log queue
     console.group('Queue: ');
@@ -106,20 +123,9 @@ const findPeerForLoneSocket = (socket) => {
         console.log('Queue empty');
     } else {
         PEER_QUEUE.forEach((socket) => {
-            console.log(socket.id + ' ');
+            console.log(socket.id);
         });
     }
     console.groupEnd();
-    return { room: null, peer: null };
-};
-
-module.exports = {
-    SocketEvents,
-    PEER_QUEUE,
-    initSocketData,
-    findPeerForLoneSocket,
-    haversineDistance,
-    connectPeers,
-    stopDistanceUpdates,
-    updateDistanceCron,
+    return null;
 };

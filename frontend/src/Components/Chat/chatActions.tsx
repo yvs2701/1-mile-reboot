@@ -2,7 +2,7 @@
 import styles from './chatActions.module.css'
 import { Primary, Secondary } from '../Buttons/button.tsx'
 import { Dispatch, KeyboardEventHandler, MouseEventHandler, SetStateAction, useEffect, useRef, useState } from 'react'
-import { SkipBtnStates } from '../../types.ts'
+import { SkipBtnStates } from '../../utils/types.ts'
 import EmojiPicker, { EmojiClickData, EmojiStyle, SuggestionMode, Theme } from 'emoji-picker-react'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import add_emoji from '../../assets/add_emoji_icon.svg'

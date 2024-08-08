@@ -1,6 +1,6 @@
 'use client';
 import styles from './chatpanel.module.css'
-import { SkipBtnStates, TMessage } from '../../types'
+import { SkipBtnStates, TMessage } from '../../utils/types'
 import MessagePanel from './MessagePanel'
 import ChatActions from './chatActions'
 import { Dispatch, KeyboardEventHandler, MouseEventHandler, SetStateAction } from 'react'

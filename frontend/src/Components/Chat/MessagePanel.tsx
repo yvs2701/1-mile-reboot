@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { message_server_id, TMessage } from '../../types'
+import { message_server_id, TMessage } from '../../utils/types'
 import styles from './messagePanel.module.css'
 
 export default function MessagePanel({ user, messages }: { user: string, messages: TMessage[] }) {

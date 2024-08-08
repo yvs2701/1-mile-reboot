@@ -6,72 +6,43 @@ import {
 import Landing from './pages/Landing'
 import ChatPage from './pages/ChatPage'
 import Navbar from './Components/Navbar/Navbar'
-import { socket } from "./utils/socket";
 import { useEffect, useRef, useState } from 'react';
-import { SocketEvents } from './types';
+import { SocketEvents } from './utils/types';
 import LocationProtectedRoutes from './Components/ProtectedRoutes/PrivateRoutes';
 import { GeolocatedResult, useGeolocated } from 'react-geolocated';
-import { geolocatedOptions } from './utils/configs';
+import { socket, geolocatedOptions } from './utils/configs';
 
 function App() {
 
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [peerDistance, setPeerDistance] = useState<string | number | null>(null);
-  const locReportTimer = useRef<NodeJS.Timeout | undefined>(undefined);
+  const lastLocationUpdate = useRef<number>(0);
 
+  // FIXME - Firefox has empty coords object
   const geoLoc = useGeolocated({
     ...geolocatedOptions,
     onError: (error) => {
-      console.group('Geolocation error');
       console.error('Error getting location', error);
-      console.groupEnd();
-    },
-    onSuccess: (position) => {
-      console.group('Geolocation position fetched successfully');
-      console.error('Error getting location', position.coords);
-      console.groupEnd();
     },
   }) as GeolocatedResult & { error: string | null };
 
-  useEffect(() => {
-    // FIXME - Firefox is has empty coords object
-    if (geoLoc.isGeolocationAvailable && geoLoc.isGeolocationEnabled) {
-      console.log('Coords: ', geoLoc.coords);
-    }
+  useEffect(() => { // location report
+    (() => {
+      if (socket.connected && geoLoc.isGeolocationAvailable && geoLoc.isGeolocationEnabled &&
+        geoLoc.coords !== undefined && geoLoc.coords.latitude !== undefined && geoLoc.coords.longitude !== undefined) {
 
-    const locationReport = () => {
-      if (geoLoc.isGeolocationAvailable && geoLoc.isGeolocationEnabled && geoLoc.coords !== undefined &&
-        geoLoc.coords.latitude !== undefined && geoLoc.coords.longitude !== undefined) {
-        socket.emit(SocketEvents.LOCATION_REPORT, { latitude: geoLoc.coords.latitude, longitude: geoLoc.coords.longitude });
+        const now = new Date().getTime();
+        if (now - lastLocationUpdate.current < 60000) {
+          // throttled fn - will not run if called within 1 minute
+          return;
+        }
+
+        socket.volatile.emit(SocketEvents.LOCATION_REPORT, { latitude: geoLoc.coords.latitude, longitude: geoLoc.coords.longitude });
+        lastLocationUpdate.current = now;
+
+        console.log('Location reported', geoLoc.coords);
       }
-
-      locReportTimer.current = setTimeout(locationReport, 60000); // report location every minute(= 60000 ms)
-    }
-
-    function onChatStart() {
-      locationReport();
-    }
-
-    function onSkipChat() {
-      setPeerDistance(null);
-      clearTimeout(locReportTimer.current);
-    }
-    function onChatEnd() {
-      setPeerDistance(null);
-      clearTimeout(locReportTimer.current);
-    }
-
-    socket
-      .on(SocketEvents.CHAT_START, onChatStart)
-      .on(SocketEvents.SKIP_CHAT, onSkipChat)
-      .on(SocketEvents.CHAT_END, onChatEnd)
-    return () => {
-      clearTimeout(locReportTimer.current)
-      socket
-        .off(SocketEvents.CHAT_START, onChatStart)
-        .off(SocketEvents.SKIP_CHAT, onSkipChat)
-        .off(SocketEvents.CHAT_END, onChatEnd)
-    }
+    })()
   }, [geoLoc.coords, geoLoc.isGeolocationAvailable, geoLoc.isGeolocationEnabled])
 
   useEffect(() => {
@@ -86,6 +57,10 @@ function App() {
       setPeerDistance(dist.toFixed(2));
     }
 
+    function onChatEnd() {
+      setPeerDistance(null);
+    }
+
     function onDisconnect() {
       console.log('Disconnected socket');
       setIsConnected(false);
@@ -94,12 +69,14 @@ function App() {
     socket
       .on(SocketEvents.CONNECT, onConnect)
       .on(SocketEvents.DISTANCE_UPDATE, onDistanceUpdate)
+      .on(SocketEvents.CHAT_END, onChatEnd)
       .on(SocketEvents.DISCONNECT, onDisconnect)
 
     return () => {
       socket.disconnect()
         .off(SocketEvents.CONNECT, onConnect)
         .off(SocketEvents.DISTANCE_UPDATE, onDistanceUpdate)
+        .off(SocketEvents.CHAT_END, onChatEnd)
         .off(SocketEvents.DISCONNECT, onDisconnect)
     }
   }, [])
