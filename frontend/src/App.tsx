@@ -17,6 +17,7 @@ function App() {
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [peerDistance, setPeerDistance] = useState<string | number | null>(null);
   const lastLocationUpdate = useRef<number>(0);
+  const locationUpdateTimeout = useRef<NodeJS.Timeout | undefined>();
 
   // FIXME - Firefox has empty coords object
   const geoLoc = useGeolocated({
@@ -27,7 +28,7 @@ function App() {
   }) as GeolocatedResult & { error: string | null };
 
   useEffect(() => { // location report
-    (() => {
+    const locationUpdate = () => {
       if (socket.connected && geoLoc.isGeolocationAvailable && geoLoc.isGeolocationEnabled &&
         geoLoc.coords !== undefined && geoLoc.coords.latitude !== undefined && geoLoc.coords.longitude !== undefined) {
 
@@ -37,12 +38,19 @@ function App() {
           return;
         }
 
-        socket.volatile.emit(SocketEvents.LOCATION_REPORT, { latitude: geoLoc.coords.latitude, longitude: geoLoc.coords.longitude });
-        lastLocationUpdate.current = now;
+        socket.volatile.emit(SocketEvents.LOCATION_REPORT, { latitude: geoLoc.coords.latitude, longitude: geoLoc.coords.longitude }, (res: any) => {
+          lastLocationUpdate.current = now; // only throttle if the server acknowledges the location report
+          console.log('Location reported', geoLoc.coords, 'Server Ack:', res.ack);
+        });
 
-        console.log('Location reported', geoLoc.coords);
+        locationUpdateTimeout.current = setTimeout(locationUpdate, 60000);
       }
-    })()
+    }
+    locationUpdate();
+
+    return () => {
+      clearTimeout(locationUpdateTimeout.current);
+    }
   }, [geoLoc.coords, geoLoc.isGeolocationAvailable, geoLoc.isGeolocationEnabled])
 
   useEffect(() => {

@@ -11,8 +11,11 @@ function Navbar({ isConnected, peerDistance }: { isConnected: boolean, peerDista
         <h3 className={styles['navbar-brand']}>1-mile</h3>
       </div>
       <div className={styles['navbar-right']}>
-        <span>Socket: {isConnected ? 'connected' : 'not connected'}{' '}</span>
-        <span>Distance: {peerDistance !== null ? peerDistance : '--'}km{' '}</span>
+        <span>
+          Socket: {isConnected ? 'connected' : 'not connected'}
+          {' '}
+          Distance: {peerDistance !== null ? peerDistance : '--'}km
+        </span>
       </div>
     </nav>
   )
