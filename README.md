@@ -12,15 +12,17 @@ Strangers must be within 1 to 8 miles of each other to be connected. The distanc
 ## Testing on Your machine
 
 ### Docker:
-1. Clone the repository.
-2. Run `docker-compose up` within the cloned repository.
-3. Open `localhost:3000` in your browser.
-4. You can now simulate another browser tab with a different location or use another physical device on your local network.
+1. Clone the repository. Set the environment variables listed in the `.env.example` file. You may rename this to `.env` and set the values.
+2. Run `npm install` within the cloned repository. Also, install the dependencies in the **frontend** directory using the same command.
+4. Build the project using `npm run build`.
+4. Run `docker-compose up` within the cloned repository.
+5. Open `localhost:3000` in your browser.
+6. You can now simulate another browser tab with a different location or use another physical device on your local network.
 
 ### Manual:
-1. Clone the repository.
+1. Clone the repository. Set the environment variables listed in the `.env.example` file. You may rename this to `.env` and set the values.
 2. Configure a [PostgreSQL](https://www.postgresql.org/) database with the [PostGIS](https://postgis.net/) extension.
-3. Run `npm install` within the cloned repository.
-4. Run `npm build` and `npm start` within the cloned repository.
+3. Run `npm install` within the cloned repository. Also, install the dependencies in the **frontend** directory using the same command.
+4. Run `npm build` and `npm run dev` within the cloned repository.
 5. Open `localhost:3000` in your browser.
 6. You can now simulate another browser tab with a different location or use another physical device on your local network.
