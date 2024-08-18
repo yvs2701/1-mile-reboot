@@ -1,0 +1,33 @@
+services:
+  postgresdb:
+    image: postgis/postgis:16-3.4
+    container_name: one-mile-db
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      - POSTGRES_USER=$DB_USER
+      - POSTGRES_PASSWORD=$DB_PASSWORD
+      - POSTGRES_DB=$DB_NAME
+    ports:
+      - $DB_EXTERNAL_PORT:$DB_PORT
+    volumes:
+      - db:/var/lib/postgres
+  app:
+    depends_on:
+      - postgresdb
+    build: .
+    image: onemile
+    container_name: one-mile-app
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - $APP_EXTERNAL_PORT:$APP_PORT
+    environment:
+      - DB_HOST=postgresdb
+      - DB_USER=$DB_USER
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_NAME=$DB_NAME
+      - DB_PORT=$DB_EXTERNAL_PORT
+
+volumes: 
+  db:
